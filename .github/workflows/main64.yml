@@ -43,10 +43,51 @@ jobs:
             git
             mingw-w64-x86_64-hunspell
             mingw-w64-x86_64-boost
+            unzip
+            mingw-w64-x86_64-wget
+            mingw-w64-x86_64-jq
 
       - name: build codeblocks
         shell: msys2 {0}
         run: .ci/build.sh
+
+      # Get the latest release version and construct the download URL
+      - name: Get latest release version of pedeps tool
+        id: get_latest_release
+        shell: msys2 {0}  # Use MSYS2 shell
+        run: |
+          # Fetch the latest release version from GitHub API and parse with jq
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/brechtsanders/pedeps/releases/latest | jq -r .tag_name)
+          echo "Latest version is $LATEST_VERSION"
+
+          # Construct the download URL
+          DOWNLOAD_URL="https://github.com/brechtsanders/pedeps/releases/download/${LATEST_VERSION}/pedeps-${LATEST_VERSION}-win64.zip"
+          echo "DOWNLOAD_URL=${DOWNLOAD_URL}" >> $GITHUB_ENV
+
+      # Download and extract the specific pedeps release
+      - name: Download and extract pedeps
+        shell: msys2 {0}  # Use MSYS2 shell
+        run: |
+          # Use the URL from the previous step to download the file
+          wget $DOWNLOAD_URL -O pedeps-latest.zip
+
+          # Unzip the downloaded file
+          unzip pedeps-latest.zip -d pedeps
+
+          # List contents of the pedeps directory to verify
+          ls -R pedeps
+
+      # Run copypedeps on codeblocks.exe
+      - name: Run copypedeps
+        shell: msys2 {0}  # Use MSYS2 shell
+        run: |
+          # Execute copypedeps.exe if it exists
+          if [ -f pedeps/bin/copypedeps.exe ]; then
+            ./pedeps/bin/copypedeps.exe -r -n -v /d/msys64/opt/codeblocks/bin/codeblocks.exe /d/msys64/opt/codeblocks/bin/
+          else
+            echo "copypedeps.exe is missing!"
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
