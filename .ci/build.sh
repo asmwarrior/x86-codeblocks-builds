@@ -17,7 +17,9 @@ set -eux
 #############################################################
 
 ## Build codeblocks
-git clone https://github.com/arnholm/codeblocks_sfmirror.git
+# git clone https://github.com/arnholm/codeblocks_sfmirror.git
+# build my own git clone of the C::B source, which has some extra commits of mine(asmwarrior)
+git clone https://github.com/asmwarrior/codeblocks_sfmirror.git
 pushd codeblocks_sfmirror/
 
 ## Patch build
