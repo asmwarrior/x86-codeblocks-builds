@@ -89,6 +89,39 @@ jobs:
             exit 1
           fi
 
+      # Step to handle all plugin .dll files and copy dependencies
+      - name: Copy dependencies for Code::Blocks plugins
+        shell: msys2 {0}
+        run: |
+          # Define the plugin directory and the destination directory
+          PLUGIN_DIR="/d/msys64/opt/codeblocks/lib/codeblocks/plugins/"
+          BIN_DIR="/d/msys64/opt/codeblocks/bin/"
+
+          # Loop through all .dll files in the plugin directory
+          for plugin in ${PLUGIN_DIR}*.dll; do
+            echo "Processing plugin: $plugin"
+
+            # Run copypedeps.exe to copy all the dependencies of the plugin
+            if [ -f pedeps/bin/copypedeps.exe ]; then
+              ./pedeps/bin/copypedeps.exe -r -n -v "$plugin" "$BIN_DIR"
+            else
+              echo "copypedeps.exe is missing!"
+              exit 1
+            fi
+
+            # Get the plugin filename (without path)
+            plugin_filename=$(basename "$plugin")
+
+            # Delete the plugin DLL from the bin folder
+            if [ -f "$BIN_DIR$plugin_filename" ]; then
+              echo "Deleting copied plugin DLL: $BIN_DIR$plugin_filename"
+              rm "$BIN_DIR$plugin_filename"
+            else
+              echo "Plugin DLL $BIN_DIR$plugin_filename not found in bin folder."
+            fi
+          done
+
+
       - uses: actions/upload-artifact@v4
         with:
           name: codeblocks64
