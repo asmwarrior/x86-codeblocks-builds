@@ -121,8 +121,52 @@ jobs:
             fi
           done
 
+        # - uses: actions/upload-artifact@v4
+        #   with:
+        #     name: codeblocks64
+        #     path: D:\msys64\opt\codeblocks
 
+        # Get Time
+      - name: Get Time
+        id: time
+        uses: nanzm/get-time-action@master
+        with:
+          timeZone: UTC+8
+          format: 'YYYY-MM-DD-HH-mm-ss'
+
+      # Rename output zip file using the timestamp
+      - name: Zip codeblocks and dependencies with timestamp
+        shell: msys2 {0}  # Ensure MSYS2 shell is used for the zip command
+        run: |
+          TIME=${{ steps.time.outputs.time }}
+          ZIP_NAME="codeblocks-${TIME}.zip"
+          zip -r $ZIP_NAME /D/msys64/opt/codeblocks
+          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+
+      # Upload the result as an artifact to review dependencies
       - uses: actions/upload-artifact@v4
         with:
-          name: codeblocks64
-          path: D:\msys64\opt\codeblocks
+          name: codeblocks-dependencies-${{ steps.time.outputs.time }}
+          path: ${{ env.ZIP_NAME }}
+
+      # Create GitHub release and attach the zip file
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "release-${{ steps.time.outputs.time }}"
+          release_name: "release-${{ steps.time.outputs.time }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.ZIP_NAME }}
+          asset_name: ${{ env.ZIP_NAME }}
+          asset_content_type: application/zip
