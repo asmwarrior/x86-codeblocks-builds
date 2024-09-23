@@ -41,14 +41,23 @@ jobs:
             base-devel
             zip
             git
+            p7zip
             mingw-w64-i686-hunspell
             mingw-w64-i686-boost
 
       - name: build codeblocks
+        id: build
         shell: msys2 {0}
-        run: .ci/build.sh
-
-      - uses: actions/upload-artifact@v4
+        run: |
+          .ci/build.sh
+          7zr a -mx9 -mqs=on -mmt=on /opt/codeblocks.7z /opt/codeblocks/*
+          
+      - uses: ncipollo/release-action@v1
         with:
-          name: codeblocks
-          path: D:\msys64\opt\codeblocks
+          allowUpdates: true
+          tag: ${{ steps.build.outputs.RELEASE_TAG }}
+          name: ${{ steps.build.outputs.RELEASE_NAME }}
+          artifacts: "D:/msys64/opt/codeblocks.7z"
+          body: |
+            This is ${{ steps.build.outputs.RELEASE_NAME }}. Please read the instructions first.
+          token: ${{ secrets.GITHUB_TOKEN }}
