@@ -146,8 +146,8 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          tag: ${{ steps.build.outputs.RELEASE_TAG }}
-          name: ${{ steps.build.outputs.RELEASE_NAME }}
+          tag: ${{ steps.build.outputs.RELEASE_TAG }}-${{ steps.time.outputs.time }}
+          name: ${{ steps.build.outputs.RELEASE_NAME }} at ${{ steps.time.outputs.time }}
           artifacts: "D:/msys64/opt/codeblocks64.7z"
           body: |
             This is ${{ steps.build.outputs.RELEASE_NAME }} at Time stamp ${{ steps.time.outputs.time }}. Please read the instructions first.
