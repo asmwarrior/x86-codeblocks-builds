@@ -40,6 +40,7 @@ jobs:
             mingw-w64-x86_64-wxwidgets3.2-msw-cb_headers
             base-devel
             zip
+            p7zip
             git
             mingw-w64-x86_64-hunspell
             mingw-w64-x86_64-boost
@@ -48,6 +49,7 @@ jobs:
             mingw-w64-x86_64-jq
 
       - name: build codeblocks
+        id: build
         shell: msys2 {0}
         run: .ci/build.sh
 
@@ -138,35 +140,15 @@ jobs:
       - name: Zip codeblocks and dependencies with timestamp
         shell: msys2 {0}  # Ensure MSYS2 shell is used for the zip command
         run: |
-          TIME=${{ steps.time.outputs.time }}
-          ZIP_NAME="codeblocks-${TIME}.zip"
-          zip -r $ZIP_NAME /D/msys64/opt/codeblocks
-          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+          7zr a -mx9 -mqs=on -mmt=on /opt/codeblocks64.7z /opt/codeblocks/*
 
-      # Upload the result as an artifact to review dependencies
-      - uses: actions/upload-artifact@v4
+      # Make a releases
+      - uses: ncipollo/release-action@v1
         with:
-          name: codeblocks-dependencies-${{ steps.time.outputs.time }}
-          path: ${{ env.ZIP_NAME }}
-
-      # Create GitHub release and attach the zip file
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "release-${{ steps.time.outputs.time }}"
-          release_name: "release-${{ steps.time.outputs.time }}"
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.ZIP_NAME }}
-          asset_name: ${{ env.ZIP_NAME }}
-          asset_content_type: application/zip
+          allowUpdates: true
+          tag: ${{ steps.build.outputs.RELEASE_TAG }}
+          name: ${{ steps.build.outputs.RELEASE_NAME }}
+          artifacts: "D:/msys64/opt/codeblocks64.7z"
+          body: |
+            This is ${{ steps.build.outputs.RELEASE_NAME }} at Time stamp ${{ steps.time.outputs.time }}. Please read the instructions first.
+          token: ${{ secrets.GITHUB_TOKEN }}
