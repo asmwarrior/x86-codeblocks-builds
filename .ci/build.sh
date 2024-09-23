@@ -22,6 +22,11 @@ set -eux
 git clone https://github.com/asmwarrior/codeblocks_sfmirror.git
 pushd codeblocks_sfmirror/
 
+## Obtain revision number
+TAG=r$(git log --graph | grep 'git-svn-id' | head -n 1 | grep -o -e "@\([0-9]*\)" | tr -d '@ ')
+WX_VERSION=$(wx-config --version-full)
+NAME="CodeBlocks svn "${TAG}" and wxWidgets "${WX_VERSION}" Build"
+
 ## Patch build
 git apply -v ../0001-fix-32-bit-build-and-wxSmith.patch
 # Workaround from msys2: error: definition of static data member 'wxsArrayStringEditorDlg::sm_eventTable' of dllimport'd class
@@ -32,3 +37,8 @@ grep -rl "PLUGIN_EXPORT " src/plugins/contrib/wxSmith | xargs -i sed -i "s/PLUGI
 make -j$(nproc) install
 mv /opt/codeblocks/lib/codeblocks/bin/*.dll /opt/codeblocks/bin/
 mv /opt/codeblocks/lib/*.dll /opt/codeblocks/bin/
+
+if [[ -v GITHUB_WORKFLOW ]]; then
+  echo "RELEASE_NAME=${NAME}" >> $GITHUB_OUTPUT
+  echo "RELEASE_TAG=${TAG}" >> $GITHUB_OUTPUT
+fi
