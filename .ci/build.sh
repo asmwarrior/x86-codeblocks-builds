@@ -28,7 +28,12 @@ WX_VERSION=$(wx-config --version-full)
 NAME="CodeBlocks svn "${TAG}" and wxWidgets "${WX_VERSION}" Build"
 
 ## Patch build
-git apply -v ../0001-fix-32-bit-build-and-wxSmith.patch
+# git apply -v ../0001-fix-32-bit-build-and-wxSmith.patch
+# patch -Nbp1 -i ../001-makefile-wxsmith-add-no-undefined.patch
+# patch -Nbp1 -i ../004-disable-parallel-make-for-SmartIndent.patch
+# patch -Nbp1 -i ../005-codeblocks-plugin-fix.patch
+# those patches were already applied in the github repo, so no need to apply again
+
 # Workaround from msys2: error: definition of static data member 'wxsArrayStringEditorDlg::sm_eventTable' of dllimport'd class
 # grep -rl "PLUGIN_EXPORT " src/plugins/contrib/wxSmith | xargs -i sed -i "s/PLUGIN_EXPORT //g" {}
 
