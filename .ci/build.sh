@@ -41,7 +41,8 @@ NAME="CodeBlocks svn "${TAG}" and wxWidgets "${WX_VERSION}" Build"
 ./configure --disable-pch --with-contrib-plugins=all,-Valgrind --prefix=/opt/codeblocks
 make -j$(nproc) install
 mv /opt/codeblocks/lib/codeblocks/bin/*.dll /opt/codeblocks/bin/
-mv /opt/codeblocks/lib/*.dll /opt/codeblocks/bin/
+# it looks like there is no *.dll file inside the source folder, so comment out the below line
+# mv /opt/codeblocks/lib/*.dll /opt/codeblocks/bin/
 
 if [[ -v GITHUB_WORKFLOW ]]; then
   echo "RELEASE_NAME=${NAME}" >> $GITHUB_OUTPUT
