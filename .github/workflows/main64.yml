@@ -28,7 +28,7 @@ jobs:
           msystem: UCRT64
           location: D:\
           install: >-
-            mingw-w64-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-toolchain
             libtool
             automake-wrapper
             autoconf-wrapper
