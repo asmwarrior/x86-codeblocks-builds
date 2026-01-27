@@ -21,33 +21,32 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Setup MSYS2 UCRT64 environment
       - uses: msys2/setup-msys2@v2
         with:
           update: true
-          msystem: UCRT64
+          msystem: MINGW64
           location: D:\
           install: >-
             mingw-w64-x86_64-toolchain
             libtool
             automake-wrapper
             autoconf-wrapper
-            mingw-w64-ucrt-x86_64-tinyxml
-            mingw-w64-ucrt-x86_64-drmingw
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-common-libs
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-common
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw-libs
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw-cb_headers
+            mingw-w64-x86_64-tinyxml
+            mingw-w64-x86_64-drmingw
+            mingw-w64-x86_64-wxwidgets3.2-common-libs
+            mingw-w64-x86_64-wxwidgets3.2-common
+            mingw-w64-x86_64-wxwidgets3.2-msw
+            mingw-w64-x86_64-wxwidgets3.2-msw-libs
+            mingw-w64-x86_64-wxwidgets3.2-msw-cb_headers
             base-devel
             zip
             p7zip
             git
-            mingw-w64-ucrt-x86_64-hunspell
-            mingw-w64-ucrt-x86_64-boost
+            mingw-w64-x86_64-hunspell
+            mingw-w64-x86_64-boost
             unzip
-            mingw-w64-ucrt-x86_64-wget
-            mingw-w64-ucrt-x86_64-jq
+            mingw-w64-x86_64-wget
+            mingw-w64-x86_64-jq
 
       - name: build codeblocks
         id: build
