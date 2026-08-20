@@ -36,7 +36,6 @@ jobs:
           pacman -Sy --noconfirm
           pacman -S --noconfirm --needed \
             mingw-w64-ucrt-x86_64-toolchain \
-            mingw-w64-ucrt-x86_64-tinyxml \
             mingw-w64-ucrt-x86_64-drmingw \
             mingw-w64-ucrt-x86_64-wxwidgets3.3-common-libs \
             mingw-w64-ucrt-x86_64-wxwidgets3.3-common \
