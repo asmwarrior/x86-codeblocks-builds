@@ -132,7 +132,7 @@ jobs:
         id: time
         shell: bash
         run: |
-          echo "TIMESTAMP=$(date +'%Y-%m-%d-%H-%m-%s')" >> $GITHUB_OUTPUT
+          echo "TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
 
       # Rename output zip file using the timestamp (Use -mx6 to prevent CPU/Memory exhaustion)
       - name: Zip codeblocks and dependencies with timestamp
