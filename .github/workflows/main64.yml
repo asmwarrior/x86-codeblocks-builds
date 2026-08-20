@@ -21,12 +21,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Setup MSYS2 UCRT64 environment
+      # Setup MSYS2 UCRT64 environment (Disable full update and enable cache to avoid OOM crash)
       - uses: msys2/setup-msys2@v2
         with:
-          update: true
           msystem: UCRT64
           location: D:\
+          update: false
+          cache: true
           install: >-
             mingw-w64-ucrt-x86_64-toolchain
             libtool
@@ -75,7 +76,7 @@ jobs:
           wget $DOWNLOAD_URL -O pedeps-latest.zip
 
           # Unzip the downloaded file
-          unzip pedeps-latest.zip -d pedeps
+          unzip -q pedeps-latest.zip -d pedeps
 
           # List contents of the pedeps directory to verify
           ls -R pedeps
@@ -86,7 +87,7 @@ jobs:
         run: |
           # Execute copypedeps.exe if it exists
           if [ -f pedeps/bin/copypedeps.exe ]; then
-            ./pedeps/bin/copypedeps.exe -r -n -v /d/msys64/opt/codeblocks/bin/codeblocks.exe /d/msys64/opt/codeblocks/bin/
+            ./pedeps/bin/copypedeps.exe -r -n -v /opt/codeblocks/bin/codeblocks.exe /opt/codeblocks/bin/
           else
             echo "copypedeps.exe is missing!"
             exit 1
@@ -97,11 +98,12 @@ jobs:
         shell: msys2 {0}
         run: |
           # Define the plugin directory and the destination directory
-          PLUGIN_DIR="/d/msys64/opt/codeblocks/lib/codeblocks/plugins/"
-          BIN_DIR="/d/msys64/opt/codeblocks/bin/"
+          PLUGIN_DIR="/opt/codeblocks/lib/codeblocks/plugins/"
+          BIN_DIR="/opt/codeblocks/bin/"
 
           # Loop through all .dll files in the plugin directory
           for plugin in ${PLUGIN_DIR}*.dll; do
+            [ -e "$plugin" ] || continue
             echo "Processing plugin: $plugin"
 
             # Run copypedeps.exe to copy all the dependencies of the plugin
@@ -124,32 +126,26 @@ jobs:
             fi
           done
 
-        # - uses: actions/upload-artifact@v4
-        #   with:
-        #     name: codeblocks64
-        #     path: D:\msys64\opt\codeblocks
-
-        # Get Time
+      # Get Time (Using native bash date to generate timestamp)
       - name: Get Time
         id: time
-        uses: nanzm/get-time-action@master
-        with:
-          timeZone: UTC+8
-          format: 'YYYY-MM-DD-HH-mm-ss'
+        shell: bash
+        run: |
+          echo "TIMESTAMP=$(date +'%Y-%m-%d-%H-%m-%s')" >> $GITHUB_OUTPUT
 
-      # Rename output zip file using the timestamp
+      # Rename output zip file using the timestamp (Use -mx6 to prevent CPU/Memory exhaustion)
       - name: Zip codeblocks and dependencies with timestamp
         shell: msys2 {0}  # Ensure MSYS2 shell is used for the zip command
         run: |
-          7zr a -mx9 -mqs=on -mmt=on /opt/codeblocks64.7z /opt/codeblocks/*
+          7zr a -mx6 -mqs=on -mmt=on /opt/codeblocks64.7z /opt/codeblocks/*
 
-      # Make a releases
+      # Make a release
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          tag: ${{ steps.build.outputs.RELEASE_TAG }}-${{ steps.time.outputs.time }}
-          name: ${{ steps.build.outputs.RELEASE_NAME }} at ${{ steps.time.outputs.time }}
+          tag: ${{ steps.build.outputs.RELEASE_TAG }}-${{ steps.time.outputs.TIMESTAMP }}
+          name: ${{ steps.build.outputs.RELEASE_NAME }} at ${{ steps.time.outputs.TIMESTAMP }}
           artifacts: "D:/msys64/opt/codeblocks64.7z"
           body: |
-            This is ${{ steps.build.outputs.RELEASE_NAME }} at Time stamp ${{ steps.time.outputs.time }}. Please read the instructions first.
+            This is ${{ steps.build.outputs.RELEASE_NAME }} at Time stamp ${{ steps.time.outputs.TIMESTAMP }}. Please read the instructions first.
           token: ${{ secrets.GITHUB_TOKEN }}
