@@ -23,11 +23,12 @@ jobs:
 
       # Setup MSYS2 UCRT64 environment (Disable full update and enable cache to avoid OOM crash)
       - uses: msys2/setup-msys2@v2
+        env:
+          MSYS2_ARG_CONCURRENCY: "2"
         with:
           msystem: UCRT64
           location: D:\
-          update: false
-          pacman-args: -Sy
+          update: true
           cache: true
           install: >-
             mingw-w64-ucrt-x86_64-toolchain
