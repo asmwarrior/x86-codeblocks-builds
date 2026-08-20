@@ -21,36 +21,33 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Setup MSYS2 UCRT64 environment (Disable full update and enable cache to avoid OOM crash)
+      # Setup MSYS2 UCRT64 base environment without auto full-upgrade to prevent OOM
       - uses: msys2/setup-msys2@v2
-        env:
-          MSYS2_ARG_CONCURRENCY: "2"
         with:
           msystem: UCRT64
           location: D:\
-          update: true
+          update: false
           cache: true
-          install: >-
-            mingw-w64-ucrt-x86_64-toolchain
-            libtool
-            automake-wrapper
-            autoconf-wrapper
-            mingw-w64-ucrt-x86_64-tinyxml
-            mingw-w64-ucrt-x86_64-drmingw
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-common-libs
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-common
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw-libs
-            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw-cb_headers
-            base-devel
-            zip
-            p7zip
-            git
-            mingw-w64-ucrt-x86_64-hunspell
-            mingw-w64-ucrt-x86_64-boost
-            unzip
-            mingw-w64-ucrt-x86_64-wget
-            mingw-w64-ucrt-x86_64-jq
+
+      # Sync database FIRST, then install the absolute latest packages (e.g. wxWidgets 3.3.3)
+      - name: Sync package database and install latest packages
+        shell: msys2 {0}
+        run: |
+          pacman -Sy --noconfirm
+          pacman -S --noconfirm --needed \
+            mingw-w64-ucrt-x86_64-toolchain \
+            mingw-w64-ucrt-x86_64-tinyxml \
+            mingw-w64-ucrt-x86_64-drmingw \
+            mingw-w64-ucrt-x86_64-wxwidgets3.3-common-libs \
+            mingw-w64-ucrt-x86_64-wxwidgets3.3-common \
+            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw \
+            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw-libs \
+            mingw-w64-ucrt-x86_64-wxwidgets3.3-msw-cb_headers \
+            mingw-w64-ucrt-x86_64-hunspell \
+            mingw-w64-ucrt-x86_64-boost \
+            mingw-w64-ucrt-x86_64-wget \
+            mingw-w64-ucrt-x86_64-jq \
+            base-devel libtool automake-wrapper autoconf-wrapper zip p7zip git unzip
 
       - name: build codeblocks
         id: build
