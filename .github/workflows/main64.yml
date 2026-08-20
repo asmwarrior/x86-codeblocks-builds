@@ -27,6 +27,7 @@ jobs:
           msystem: UCRT64
           location: D:\
           update: false
+          pacman-args: -Sy
           cache: true
           install: >-
             mingw-w64-ucrt-x86_64-toolchain
